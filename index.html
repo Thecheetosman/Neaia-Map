@@ -14,14 +14,15 @@
             padding: 0;
             background: #0f141d;
         }
-        /* Custom styling for markers/popups */
-        .leaflet-popup-content-wrapper {
-            background: #1e2638;
-            color: #fff;
-            border-radius: 8px;
-        }
-        .leaflet-popup-tip {
-            background: #1e2638;
+        /* Coordinate display box */
+        .coord-box {
+            background: rgba(15, 20, 29, 0.85);
+            color: #00ff88;
+            padding: 6px 12px;
+            font-family: monospace;
+            font-size: 13px;
+            border-radius: 4px;
+            border: 1px solid #303a4c;
         }
     </style>
 </head>
@@ -29,50 +30,58 @@
     <div id="map"></div>
 
     <script>
-        // 1. Dimensions of your SVG (Height: 5000px, Width: 10000px)
+        // 1. Dimensions of your SVG map
         const mapHeight = 5000;
         const mapWidth = 10000;
-        const bounds = [[0, 0], [mapHeight, mapWidth]];
+        const mapBounds = [[0, 0], [mapHeight, mapWidth]];
 
-        // 2. Initialize Leaflet Map
+        // 2. Allow padding around the edges so zoom-out doesn't get blocked
+        // Padded by 20% on each side
+        const viewBounds = [
+            [-mapHeight * 0.2, -mapWidth * 0.2], 
+            [mapHeight * 1.2, mapWidth * 1.2]
+        ];
+
+        // 3. Initialize Map
         const map = L.map('map', {
             crs: L.CRS.Simple,
-            maxZoom: 3,
+            minZoom: -6,                   // Allows plenty of zoom-out room
+            maxZoom: 4,
             zoomSnap: 0.1,
             zoomDelta: 0.5,
-            maxBounds: bounds,             // Keeps view inside the map
-            maxBoundsViscosity: 1.0        // Hard boundary bounce-back
+            maxBounds: viewBounds,         // Prevents panning to infinity, but allows seeing whole map
+            maxBoundsViscosity: 0.7
         });
 
-        // 3. Add the SVG Overlay
-        const mapOverlay = L.imageOverlay('Neaia Map.svg', bounds).addTo(map);
+        // 4. Add the SVG Overlay
+        const overlay = L.imageOverlay('Neaia Map.svg', mapBounds).addTo(map);
 
-        // 4. Fit map to screen & dynamically lock the minimum zoom level
-        map.fitBounds(bounds);
-        const minFitZoom = map.getBoundsZoom(bounds);
-        map.setMinZoom(minFitZoom);
+        // 5. Fit the entire map on screen smoothly
+        map.fitBounds(mapBounds);
 
-        // Re-calculate minimum zoom if the browser window/chromebook is resized
-        window.addEventListener('resize', () => {
-            const updatedMinZoom = map.getBoundsZoom(bounds);
-            map.setMinZoom(updatedMinZoom);
+        // 6. Coordinate Tracker (shows exact [Y, X] in bottom-left corner)
+        const coordControl = L.control({ position: 'bottomleft' });
+        coordControl.onAdd = function() {
+            const div = L.DomUtil.create('div', 'coord-box');
+            div.innerHTML = 'Hover over map for [Y, X]';
+            return div;
+        };
+        coordControl.addTo(map);
+
+        map.on('mousemove', function(e) {
+            const y = Math.round(e.latlng.lat);
+            const x = Math.round(e.latlng.lng);
+            document.querySelector('.coord-box').innerHTML = `Y: ${y}, X: ${x}`;
         });
 
-        // 5. Example: Adding Interactive Markers
-        // Format: [Y, X] -> [vertical_from_bottom, horizontal_from_left]
-        const sampleMarker = L.circleMarker([2500, 5000], {
-            radius: 8,
+        // Example Marker
+        const marker = L.circleMarker([2500, 5000], {
+            radius: 7,
             color: '#00ff88',
             fillColor: '#00ff88',
-            fillOpacity: 0.8
+            fillOpacity: 0.9
         }).addTo(map);
-
-        sampleMarker.bindPopup("<b>Central Sea</b><br>Coordinates: [2500, 5000]");
-
-        // 6. Helper: Click anywhere on map to log [Y, X] coordinates to browser console
-        map.on('click', function(e) {
-            console.log(`Clicked at: [${Math.round(e.latlng.lat)}, ${Math.round(e.latlng.lng)}]`);
-        });
+        marker.bindPopup("<b>Center of Map</b><br>[2500, 5000]");
     </script>
 </body>
 </html>
