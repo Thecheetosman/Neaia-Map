@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        html, body, #map { width: 100%; height: 100%; margin: 0; padding: 0; background: #000; }
+        html, body, #map { width: 100%; height: 100%; margin: 0; padding: 0; background: #0f141d; }
     </style>
 </head>
 <body>
@@ -15,13 +15,15 @@
     <script>
         var map = L.map('map', {
             crs: L.CRS.Simple,
-            minZoom: -3,
-            maxZoom: 3,
-            zoomSnap: 0.25
+            minZoom: -5,
+            maxZoom: 4,
+            zoomSnap: 0.1
         });
 
-        // Replace 4000 and 2000 with your actual SVG width and height if different
+        // Height: 5000px, Width: 10000px
         var bounds = [[0, 0], [5000, 10000]];
+        
+        // Exact filename matching your uploaded vector file
         L.imageOverlay('Neaia Map.svg', bounds).addTo(map);
         map.fitBounds(bounds);
     </script>
