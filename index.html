@@ -60,18 +60,23 @@
         map.fitBounds(mapBounds);
 
         // 6. Coordinate Tracker (shows exact [Y, X] in bottom-left corner)
+        let coordDisplayElement = null;
+
         const coordControl = L.control({ position: 'bottomleft' });
         coordControl.onAdd = function() {
             const div = L.DomUtil.create('div', 'coord-box');
             div.innerHTML = 'Hover over map for [Y, X]';
+            coordDisplayElement = div;
             return div;
         };
         coordControl.addTo(map);
 
         map.on('mousemove', function(e) {
-            const y = Math.round(e.latlng.lat);
-            const x = Math.round(e.latlng.lng);
-            document.querySelector('.coord-box').innerHTML = `Y: ${y}, X: ${x}`;
+            if (coordDisplayElement) {
+                const y = Math.round(e.latlng.lat);
+                const x = Math.round(e.latlng.lng);
+                coordDisplayElement.innerHTML = `Y: ${y}, X: ${x}`;
+            }
         });
 
         // Example Marker
